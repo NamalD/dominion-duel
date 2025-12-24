@@ -177,6 +177,10 @@ export const buyCard = (state: GameState, cardId: string): GameState => {
         player.discard.push(boughtCard);
     }
 
+    if (newState.buys === 0) {
+        return endTurn(newState);
+    }
+
     return newState;
 };
 
