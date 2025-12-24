@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import type { GameState } from '../engine/types';
 import { initializeGame, playCard, buyCard, endTurn, endPhase, playAllTreasures } from '../engine/game';
+import { getNextAIMove } from '../engine/ai';
 import { Supply } from './Supply';
 import { Hand } from './Hand';
 import { Card } from './Card';
@@ -19,9 +20,21 @@ export const Game: React.FC = () => {
     };
 
     useEffect(() => {
-        const initialState = initializeGame(['Player 1', 'Player 2']);
+        const initialState = initializeGame(['Player 1', 'AI Player']);
         setGameState(initialState);
     }, []);
+
+    useEffect(() => {
+        if (gameState && gameState.currentPlayer === 'player-1') {
+            const timer = setTimeout(() => {
+                const nextState = getNextAIMove(gameState);
+                if (nextState) {
+                    setGameState(nextState);
+                }
+            }, 600); // 600ms delay for visibility
+            return () => clearTimeout(timer);
+        }
+    }, [gameState]);
 
     if (!gameState) return <div>Loading...</div>;
 
