@@ -25,6 +25,26 @@ export const drawCards = (player: Player, count: number): Player => {
     return newPlayer;
 };
 
+export const sortHand = (hand: Card[], phase: 'ACTION' | 'BUY'): Card[] => {
+    return [...hand].sort((a, b) => {
+        if (phase === 'ACTION') {
+            const aIsAction = a.types.includes('ACTION') ? 1 : 0;
+            const bIsAction = b.types.includes('ACTION') ? 1 : 0;
+            if (aIsAction !== bIsAction) return bIsAction - aIsAction;
+            if (a.cost !== b.cost) return b.cost - a.cost;
+            return a.name.localeCompare(b.name);
+        } else {
+            const aIsTreasure = a.types.includes('TREASURE') ? 1 : 0;
+            const bIsTreasure = b.types.includes('TREASURE') ? 1 : 0;
+            if (aIsTreasure !== bIsTreasure) return bIsTreasure - aIsTreasure;
+            const aVal = a.value || 0;
+            const bVal = b.value || 0;
+            if (aVal !== bVal) return bVal - aVal;
+            return a.name.localeCompare(b.name);
+        }
+    });
+};
+
 export const createPlayer = (id: string, name: string): Player => {
     const deck: Card[] = [];
     for (let i = 0; i < 7; i++) deck.push(Copper);
@@ -44,6 +64,10 @@ const checkAutoSkip = (state: GameState): GameState => {
         if (!hasActionCards || state.actions === 0) {
             state.turnPhase = 'BUY';
         }
+    }
+    // Always sort hand based on the final phase of this check
+    if (state.turnPhase !== 'CLEANUP') {
+        player.hand = sortHand(player.hand, state.turnPhase);
     }
     return state;
 };
@@ -192,6 +216,9 @@ export const endPhase = (state: GameState): GameState => {
     } else if (newState.turnPhase === 'BUY') {
         return endTurn(newState);
     }
+
+    const player = newState.players[newState.currentPlayer];
+    player.hand = sortHand(player.hand, newState.turnPhase);
 
     return newState;
 };

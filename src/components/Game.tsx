@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import type { GameState } from '../engine/types';
 import { initializeGame, playCard, buyCard, endTurn, endPhase, playAllTreasures } from '../engine/game';
 import { Supply } from './Supply';
@@ -7,6 +8,15 @@ import { Card } from './Card';
 
 export const Game: React.FC = () => {
     const [gameState, setGameState] = useState<GameState | null>(null);
+    const [feedback, setFeedback] = useState<{ id: number, text: string, color: string }[]>([]);
+
+    const addFeedback = (text: string, color: string = 'text-secondary') => {
+        const id = Date.now();
+        setFeedback(prev => [...prev, { id, text, color }]);
+        setTimeout(() => {
+            setFeedback(prev => prev.filter(f => f.id !== id));
+        }, 1500);
+    };
 
     useEffect(() => {
         const initialState = initializeGame(['Player 1', 'Player 2']);
@@ -86,7 +96,21 @@ export const Game: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 relative">
+                    <AnimatePresence>
+                        {feedback.map(f => (
+                            <motion.div
+                                key={f.id}
+                                initial={{ opacity: 0, y: 0 }}
+                                animate={{ opacity: 1, y: -40 }}
+                                exit={{ opacity: 0 }}
+                                className={`absolute left-0 -top-full whitespace-nowrap font-black text-lg ${f.color} drop-shadow-[0_0_8px_rgba(0,0,0,0.5)]`}
+                            >
+                                {f.text}
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+
                     {gameState.turnPhase === 'ACTION' ? (
                         <button
                             onClick={handleEndPhase}
@@ -130,15 +154,19 @@ export const Game: React.FC = () => {
                         Card Play Area
                     </h3>
                     <div className="flex-grow overflow-y-auto">
-                        <div className="flex flex-wrap gap-2 perspective-1000">
+                        <AnimatePresence>
                             {currentPlayer.playArea.map((card, i) => (
-                                <div key={i} className="hover:z-10 transition-all">
+                                <motion.div
+                                    key={`${card.id}-${i}`}
+                                    layout
+                                    className="hover:z-10 transition-all"
+                                >
                                     <div className="origin-top-left">
-                                        <Card card={card} disabled />
+                                        <Card card={card} disabled layoutId={card.id + 'play' + i} />
                                     </div>
-                                </div>
+                                </motion.div>
                             ))}
-                        </div>
+                        </AnimatePresence>
                         {currentPlayer.playArea.length === 0 && (
                             <div className="h-full flex flex-col items-center justify-center text-main/20 italic text-sm">
                                 <p>No cards played yet</p>
