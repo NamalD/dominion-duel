@@ -4,7 +4,6 @@ import { initializeGame, playCard, buyCard, endTurn, endPhase, playAllTreasures 
 import { Supply } from './Supply';
 import { Hand } from './Hand';
 import { Card } from './Card';
-import '../styles/game.css';
 
 export const Game: React.FC = () => {
     const [gameState, setGameState] = useState<GameState | null>(null);
@@ -61,53 +60,101 @@ export const Game: React.FC = () => {
     const hasTreasures = currentPlayer.hand.some(card => card.types.includes('TREASURE'));
 
     return (
-        <div className="game-screen">
-            <header className="game-header">
-                <div>Phase: {gameState.turnPhase}</div>
-                <div>Turn: {currentPlayer.name}</div>
-                <div className="stats">
-                    <span>Actions: {gameState.actions}</span>
-                    <span>Buys: {gameState.buys}</span>
-                    <span>Coins: {gameState.coins}</span>
+        <div className="flex flex-col min-h-screen p-4 md:p-8">
+            <header className="bg-slate-900/50 p-6 rounded-xl border border-secondary/20 mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div className="flex flex-col items-center md:items-start">
+                    <div className="text-secondary font-bold tracking-wider uppercase text-xs mb-1">Current Turn</div>
+                    <div className="text-2xl font-black text-main underline decoration-accent decoration-4 underline-offset-4">{currentPlayer.name}</div>
                 </div>
-                <div className="header-buttons">
+
+                <div className="flex flex-wrap justify-center gap-4 p-4 bg-background/50 rounded-lg border border-secondary/10">
+                    <div className="flex flex-col items-center px-4 border-r border-secondary/10 last:border-0">
+                        <span className="text-[10px] uppercase font-bold text-secondary/60">Phase</span>
+                        <span className="text-lg font-bold text-highlight uppercase tracking-tight">{gameState.turnPhase}</span>
+                    </div>
+                    <div className="flex flex-col items-center px-4 border-r border-secondary/10 last:border-0">
+                        <span className="text-[10px] uppercase font-bold text-secondary/60">Actions</span>
+                        <span className="text-lg font-bold text-main">{gameState.actions}</span>
+                    </div>
+                    <div className="flex flex-col items-center px-4 border-r border-secondary/10 last:border-0">
+                        <span className="text-[10px] uppercase font-bold text-secondary/60">Buys</span>
+                        <span className="text-lg font-bold text-main">{gameState.buys}</span>
+                    </div>
+                    <div className="flex flex-col items-center px-4 last:border-0">
+                        <span className="text-[10px] uppercase font-bold text-secondary/60">Coins</span>
+                        <span className="text-lg font-bold text-yellow-400">💰 {gameState.coins}</span>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-3">
                     {gameState.turnPhase === 'ACTION' ? (
-                        <button onClick={handleEndPhase} className="phase-btn">Go to Buy Phase</button>
+                        <button
+                            onClick={handleEndPhase}
+                            className="bg-secondary hover:bg-secondary/80 text-background px-6 py-3 rounded-full font-black uppercase tracking-widest text-sm transition-all shadow-[0_0_15px_rgba(65,234,212,0.3)] hover:scale-105 active:scale-95"
+                        >
+                            End Actions
+                        </button>
                     ) : (
-                        <>
+                        <div className="flex gap-2">
                             {hasTreasures && (
-                                <button onClick={handlePlayAllTreasures} className="treasures-btn">Play All Treasures</button>
+                                <button
+                                    onClick={handlePlayAllTreasures}
+                                    className="bg-yellow-500 hover:bg-yellow-400 text-background px-6 py-3 rounded-full font-black uppercase tracking-widest text-sm transition-all shadow-[0_0_15px_rgba(234,179,8,0.3)] hover:scale-105 active:scale-95"
+                                >
+                                    💰 Play All
+                                </button>
                             )}
-                            <button onClick={handleEndTurn} className="end-turn-btn">End Turn</button>
-                        </>
+                            <button
+                                onClick={handleEndTurn}
+                                className="bg-accent hover:bg-accent/80 text-main px-6 py-3 rounded-full font-black uppercase tracking-widest text-sm transition-all shadow-[0_0_15px_rgba(255,0,34,0.3)] hover:scale-105 active:scale-95"
+                            >
+                                End Buy
+                            </button>
+                        </div>
                     )}
                 </div>
             </header>
 
-            <div className="main-area">
-                <Supply
-                    supply={gameState.supply}
-                    onBuyCard={handleBuyCard}
-                    canBuy={canBuy}
-                />
+            <main className="flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8 mb-40">
+                <div className="lg:col-span-8 space-y-8">
+                    <Supply
+                        supply={gameState.supply}
+                        onBuyCard={handleBuyCard}
+                        canBuy={canBuy}
+                    />
+                </div>
 
-                <div className="play-area">
-                    <h3>Played Cards</h3>
-                    <div className="played-cards-list">
-                        {currentPlayer.playArea.map((card, i) => (
-                            <div key={i} className="played-card">
-                                <Card card={card} disabled />
+                <div className="lg:col-span-4 bg-slate-900/30 rounded-2xl p-6 border border-secondary/10 overflow-hidden flex flex-col">
+                    <h3 className="text-highlight font-black uppercase tracking-widest text-sm mb-6 flex items-center gap-2">
+                        <span className="w-2 h-4 bg-highlight rounded-full"></span>
+                        Card Play Area
+                    </h3>
+                    <div className="flex-grow overflow-y-auto">
+                        <div className="flex flex-wrap gap-2 perspective-1000">
+                            {currentPlayer.playArea.map((card, i) => (
+                                <div key={i} className="hover:z-10 transition-all">
+                                    <div className="origin-top-left">
+                                        <Card card={card} disabled />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        {currentPlayer.playArea.length === 0 && (
+                            <div className="h-full flex flex-col items-center justify-center text-main/20 italic text-sm">
+                                <p>No cards played yet</p>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
-            </div>
+            </main>
 
-            <Hand
-                player={currentPlayer}
-                onPlayCard={handlePlayCard}
-                canPlay={canPlay}
-            />
+            <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 bg-gradient-to-t from-background via-background/95 to-transparent">
+                <Hand
+                    player={currentPlayer}
+                    onPlayCard={handlePlayCard}
+                    canPlay={canPlay}
+                />
+            </footer>
         </div>
     );
 };

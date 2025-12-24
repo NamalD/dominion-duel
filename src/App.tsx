@@ -1,10 +1,9 @@
 import { Game } from './components/Game';
-import './styles/game.css';
 import './styles/index.css';
 
 function App() {
   return (
-    <div className="app-container">
+    <div className="min-h-screen bg-background text-main">
       <Game />
     </div>
   );
