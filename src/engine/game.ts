@@ -37,6 +37,17 @@ export const createPlayer = (id: string, name: string): Player => {
     return drawCards(playerWithDeck, STARTING_HAND_SIZE);
 };
 
+const checkAutoSkip = (state: GameState): GameState => {
+    const player = state.players[state.currentPlayer];
+    if (state.turnPhase === 'ACTION') {
+        const hasActionCards = player.hand.some(card => card.types.includes('ACTION'));
+        if (!hasActionCards || state.actions === 0) {
+            state.turnPhase = 'BUY';
+        }
+    }
+    return state;
+};
+
 export const initializeGame = (playerNames: string[]): GameState => {
     const players: Record<string, Player> = {};
     const turnOrder: string[] = [];
@@ -67,8 +78,7 @@ export const initializeGame = (playerNames: string[]): GameState => {
     KINGDOM_CARDS.forEach(card => {
         addToSupply(card, 10);
     });
-
-    return {
+    return checkAutoSkip({
         supply,
         players,
         turnOrder,
@@ -78,7 +88,7 @@ export const initializeGame = (playerNames: string[]): GameState => {
         buys: 1,
         coins: 0,
         trash: []
-    };
+    });
 };
 
 // Card Effects
@@ -115,6 +125,7 @@ export const playCard = (state: GameState, cardIndex: number): GameState => {
         player.playArea.push(card);
 
         applyCardEffect(newState, card);
+        return checkAutoSkip(newState);
     } else if (newState.turnPhase === 'BUY') {
         // Playing treasures
         if (!card.types.includes('TREASURE')) return state;
@@ -122,6 +133,26 @@ export const playCard = (state: GameState, cardIndex: number): GameState => {
         player.playArea.push(card);
         newState.coins += (card.value || 0);
     }
+
+    return newState;
+};
+
+export const playAllTreasures = (state: GameState): GameState => {
+    let newState = JSON.parse(JSON.stringify(state));
+    const player = newState.players[newState.currentPlayer];
+
+    if (newState.turnPhase !== 'BUY') return state;
+
+    // We iterate backwards to splice safely, or just filter and map
+    const treasures = player.hand.filter((card: Card) => card.types.includes('TREASURE'));
+    const nonTreasures = player.hand.filter((card: Card) => !card.types.includes('TREASURE'));
+
+    treasures.forEach((card: Card) => {
+        newState.coins += (card.value || 0);
+        player.playArea.push(card);
+    });
+
+    player.hand = nonTreasures;
 
     return newState;
 };
@@ -144,6 +175,18 @@ export const buyCard = (state: GameState, cardId: string): GameState => {
     const boughtCard = supplyPile.pop();
     if (boughtCard) {
         player.discard.push(boughtCard);
+    }
+
+    return newState;
+};
+
+export const endPhase = (state: GameState): GameState => {
+    const newState = JSON.parse(JSON.stringify(state));
+
+    if (newState.turnPhase === 'ACTION') {
+        newState.turnPhase = 'BUY';
+    } else if (newState.turnPhase === 'BUY') {
+        return endTurn(newState);
     }
 
     return newState;
@@ -174,5 +217,5 @@ export const endTurn = (state: GameState): GameState => {
     newState.buys = 1;
     newState.coins = 0;
 
-    return newState;
+    return checkAutoSkip(newState);
 };

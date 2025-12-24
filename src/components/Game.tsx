@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { GameState } from '../engine/types';
-import { initializeGame, playCard, buyCard, endTurn } from '../engine/game';
+import { initializeGame, playCard, buyCard, endTurn, endPhase, playAllTreasures } from '../engine/game';
 import { Supply } from './Supply';
 import { Hand } from './Hand';
 import { Card } from './Card';
@@ -29,8 +29,18 @@ export const Game: React.FC = () => {
         setGameState(newState);
     };
 
+    const handleEndPhase = () => {
+        const newState = endPhase(gameState);
+        setGameState(newState);
+    };
+
     const handleEndTurn = () => {
         const newState = endTurn(gameState);
+        setGameState(newState);
+    };
+
+    const handlePlayAllTreasures = () => {
+        const newState = playAllTreasures(gameState);
         setGameState(newState);
     };
 
@@ -48,6 +58,8 @@ export const Game: React.FC = () => {
         return true;
     };
 
+    const hasTreasures = currentPlayer.hand.some(card => card.types.includes('TREASURE'));
+
     return (
         <div className="game-screen">
             <header className="game-header">
@@ -58,7 +70,18 @@ export const Game: React.FC = () => {
                     <span>Buys: {gameState.buys}</span>
                     <span>Coins: {gameState.coins}</span>
                 </div>
-                <button onClick={handleEndTurn} className="end-turn-btn">End Turn</button>
+                <div className="header-buttons">
+                    {gameState.turnPhase === 'ACTION' ? (
+                        <button onClick={handleEndPhase} className="phase-btn">Go to Buy Phase</button>
+                    ) : (
+                        <>
+                            {hasTreasures && (
+                                <button onClick={handlePlayAllTreasures} className="treasures-btn">Play All Treasures</button>
+                            )}
+                            <button onClick={handleEndTurn} className="end-turn-btn">End Turn</button>
+                        </>
+                    )}
+                </div>
             </header>
 
             <div className="main-area">
