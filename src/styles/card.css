@@ -1,0 +1,64 @@
+.card {
+    width: 100px;
+    height: 160px;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #fff;
+    cursor: pointer;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.1s;
+    font-size: 0.8rem;
+    color: #000;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.card.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Types */
+.type-victory {
+    background-color: #90EE90;
+    border-color: #006400;
+}
+
+.type-treasure {
+    background-color: #FFD700;
+    border-color: #B8860B;
+}
+
+.type-action {
+    background-color: #D3D3D3;
+    border-color: #696969;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    padding-bottom: 4px;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-grow: 1;
+    justify-content: center;
+    text-align: center;
+}
+
+.card-type {
+    font-weight: bold;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
