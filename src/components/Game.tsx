@@ -123,32 +123,6 @@ export const Game: React.FC = () => {
                             </motion.div>
                         ))}
                     </AnimatePresence>
-
-                    {gameState.turnPhase === 'ACTION' ? (
-                        <button
-                            onClick={handleEndPhase}
-                            className="bg-secondary hover:bg-secondary/80 text-background px-6 py-3 rounded-full font-black uppercase tracking-widest text-sm transition-all shadow-[0_0_15px_rgba(65,234,212,0.3)] hover:scale-105 active:scale-95"
-                        >
-                            End Actions
-                        </button>
-                    ) : (
-                        <div className="flex gap-2">
-                            {hasTreasures && (
-                                <button
-                                    onClick={handlePlayAllTreasures}
-                                    className="bg-yellow-500 hover:bg-yellow-400 text-background px-6 py-3 rounded-full font-black uppercase tracking-widest text-sm transition-all shadow-[0_0_15px_rgba(234,179,8,0.3)] hover:scale-105 active:scale-95"
-                                >
-                                    💰 Play All
-                                </button>
-                            )}
-                            <button
-                                onClick={handleEndTurn}
-                                className="bg-accent hover:bg-accent/80 text-main px-6 py-3 rounded-full font-black uppercase tracking-widest text-sm transition-all shadow-[0_0_15px_rgba(255,0,34,0.3)] hover:scale-105 active:scale-95"
-                            >
-                                End Buy
-                            </button>
-                        </div>
-                    )}
                 </div>
             </header>
 
@@ -175,7 +149,12 @@ export const Game: React.FC = () => {
                                     className="hover:z-10 transition-all"
                                 >
                                     <div className="origin-top-left">
-                                        <Card card={card} disabled layoutId={card.id + 'play' + i} />
+                                        <Card
+                                            card={card}
+                                            disabled
+                                            layoutId={card.id + 'play' + i}
+                                            isAI={gameState.currentPlayer === 'player-1'}
+                                        />
                                     </div>
                                 </motion.div>
                             ))}
@@ -190,11 +169,43 @@ export const Game: React.FC = () => {
             </main>
 
             <footer className="fixed bottom-0 left-0 right-0 z-50 p-4 md:p-6 bg-gradient-to-t from-background via-background/95 to-transparent">
-                <Hand
-                    player={currentPlayer}
-                    onPlayCard={handlePlayCard}
-                    canPlay={canPlay}
-                />
+                {gameState.currentPlayer === 'player-0' && (
+                    <div className="flex justify-end gap-3 mb-4 max-w-7xl mx-auto px-4">
+                        {gameState.turnPhase === 'ACTION' ? (
+                            <button
+                                onClick={handleEndPhase}
+                                className="bg-secondary hover:bg-secondary/80 text-background px-6 py-2 rounded-full font-black uppercase tracking-widest text-xs transition-all shadow-[0_0_15px_rgba(65,234,212,0.3)] hover:scale-105 active:scale-95"
+                            >
+                                End Actions
+                            </button>
+                        ) : (
+                            <>
+                                {hasTreasures && (
+                                    <button
+                                        onClick={handlePlayAllTreasures}
+                                        className="bg-yellow-500 hover:bg-yellow-400 text-background px-6 py-2 rounded-full font-black uppercase tracking-widest text-xs transition-all shadow-[0_0_15px_rgba(234,179,8,0.3)] hover:scale-105 active:scale-95"
+                                    >
+                                        💰 Play All
+                                    </button>
+                                )}
+                                <button
+                                    onClick={handleEndTurn}
+                                    className="bg-accent hover:bg-accent/80 text-main px-6 py-2 rounded-full font-black uppercase tracking-widest text-xs transition-all shadow-[0_0_15px_rgba(255,0,34,0.3)] hover:scale-105 active:scale-95"
+                                >
+                                    End Buy
+                                </button>
+                            </>
+                        )}
+                    </div>
+                )}
+                <div className="max-w-7xl mx-auto">
+                    <Hand
+                        player={currentPlayer}
+                        onPlayCard={handlePlayCard}
+                        canPlay={canPlay}
+                        isAI={gameState.currentPlayer === 'player-1'}
+                    />
+                </div>
             </footer>
         </div>
     );

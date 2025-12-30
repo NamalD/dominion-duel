@@ -6,9 +6,10 @@ interface HandProps {
     player: Player;
     onPlayCard: (index: number) => void;
     canPlay: (card: CardType) => boolean;
+    isAI?: boolean;
 }
 
-export const Hand: React.FC<HandProps> = ({ player, onPlayCard, canPlay }) => {
+export const Hand: React.FC<HandProps> = ({ player, onPlayCard, canPlay, isAI }) => {
     return (
         <div className="w-full flex flex-col gap-4">
             <h3 className="text-secondary font-black tracking-widest uppercase text-xs flex items-center gap-2 after:content-[''] after:h-px after:flex-grow after:bg-secondary/20">
@@ -24,6 +25,7 @@ export const Hand: React.FC<HandProps> = ({ player, onPlayCard, canPlay }) => {
                             card={card}
                             onClick={() => onPlayCard(index)}
                             disabled={!canPlay(card)}
+                            isAI={isAI}
                         />
                     </div>
                 ))}
